@@ -56,7 +56,8 @@ export default async function Apoia({
 						{user.name ? `Apoiar ${user.name}` : "Apoiar Criador"}
 					</h3>
 
-					<FormDonate />
+					{/** biome-ignore lint/style/noNonNullAssertion: user.userName! */}
+					<FormDonate slug={user.userName!} creatorId={user.id} />
 				</section>
 			</div>
 		</div>
