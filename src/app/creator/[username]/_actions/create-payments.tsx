@@ -1,6 +1,6 @@
 "use server";
 
-//import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 const createUserNameSchema = z.object({
@@ -24,7 +24,11 @@ export async function createPayments(data: CreatePaymentSchema) {
 	}
 
 	try {
-		console.log(data);
+		const creator = await prisma.user.findUnique({
+			where: {
+				id: data.creatorId,
+			}
+		})
 	} catch (_error) {
 		return {
 			data: null,
