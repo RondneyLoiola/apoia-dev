@@ -1,11 +1,19 @@
+/** biome-ignore-all lint/complexity/noExtraBooleanCast: userName !! */
 "use client";
 
+import { Link2 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createUserName } from "../_actions/create-userName";
 
-export function UrlPreview() {
+interface UrlPreviewProps {
+	userName: string | null;
+}
+
+export function UrlPreview({ userName: slug }: UrlPreviewProps) {
 	const [error, setError] = useState<null | string>(null);
+	const [userName, setUserName] = useState(slug);
 
 	async function submitAction(formData: FormData) {
 		const userName = formData.get("userName") as string;
@@ -15,11 +23,40 @@ export function UrlPreview() {
 		}
 
 		const response = await createUserName({ userName });
-		console.log(response);
 
 		if (response.error) {
 			setError(response.error);
+			return;
 		}
+
+		if (response.data) {
+			setUserName(response.data);
+		}
+	}
+
+	// !! -> Converte para booleano
+	if (!!userName) {
+		return (
+			<div className="flex items-center justify-between flex-1 p-2 text-gray-100">
+				<div className="flex flex-col md:flex-row items-start md:items-center justify-center gap-2">
+					<h3 className="font-bold text-lg">Sua URL:</h3>
+					<Link
+						href={`${process.env.NEXT_PUBLIC_HOST_URL}/creator/${userName}`}
+						target="_blank"
+					>
+						{process.env.NEXT_PUBLIC_HOST_URL}/creator/{userName}
+					</Link>
+				</div>
+
+				<Link
+					href={`${process.env.NEXT_PUBLIC_HOST_URL}/creator/${userName}`}
+					target="_blank"
+					className="bg-blue-500 hover:bg-blue-600 transition-colors px-4 py-1 rounded-md hidden md:block"
+				>
+					<Link2 className="h-5 w-5 text-white" />
+				</Link>
+			</div>
+		);
 	}
 
 	return (
