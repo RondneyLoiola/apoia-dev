@@ -19,14 +19,12 @@ export async function createPayments(data: CreatePaymentSchema) {
 
 	if (!schema.success) {
 		return {
-			data: null,
 			error: schema.error.issues[0].message,
 		};
 	}
 
 	if (!data.creatorId) {
 		return {
-			data: null,
 			error: "Creator não encontrado",
 		};
 	}
@@ -40,9 +38,14 @@ export async function createPayments(data: CreatePaymentSchema) {
 
 		if (!creator) {
 			return {
-				data: null,
 				error: "Creator não encontrado",
 			};
+		}
+
+		if(!creator.connectedStripeAccountId) {
+			return {
+				error: "Creator não possui conta de pagamento configurada"
+			}
 		}
 
 		// Calcular a taxa que o Apoia Dev envia para o criador
@@ -79,7 +82,7 @@ export async function createPayments(data: CreatePaymentSchema) {
 			payment_intent_data: {
 				application_fee_amount: applicationFeeAmount, // stripe trabalha em centavos
 				transfer_data: {
-					destination: creator.connectedStripeAccountId as string, // criador que vai receber
+					destination: creator.connectedStripeAccountId, // criador que vai receber
 				},
 				metadata: {
 					donorName: data.name,
@@ -90,12 +93,11 @@ export async function createPayments(data: CreatePaymentSchema) {
 		});
 
 		return {
-			data: JSON.stringify(session),
-			error: null,
+			sessionId: session.id,
+			url: session.url,
 		};
 	} catch (_error) {
 		return {
-			data: null,
 			error: "Falha ao efetuar o pagamento, tente mais tarde",
 		};
 	}

@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { getStripeJs } from "@/lib/stripe-js";
 import { createPayments } from "../_actions/create-payments";
 
 const formSchema = z.object({
@@ -61,18 +60,12 @@ export function FormDonate({ slug, creatorId }: FormDonateProps) {
 			return;
 		}
 
-		if (checkout.data) {
-			const data = JSON.parse(checkout.data);
-
-			const stripe = await getStripeJs();
-
-			if(!stripe) {
-				toast.error("Falha ao criar o pagamento, tente mais tarde")
-				return;
-			}
-
-			window.location.href = data.url;
+		if (!checkout.url) {
+			toast.error("Falha ao criar o pagamento, tente mais tarde");
+			return;
 		}
+
+		window.location.href = checkout.url;
 	}
 
 	return (
