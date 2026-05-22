@@ -20,14 +20,7 @@ export async function getInfoUser(data: CreateUserNameSchema) {
 		const user = await prisma.user.findUnique({
 			where: {
 				userName: data.userName,
-			},
-			select: {
-				id: true,
-				name: true,
-				userName: true,
-				bio: true,
-				image: true,
-			},
+			}
 		});
 
 		return user;

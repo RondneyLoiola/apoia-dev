@@ -57,7 +57,7 @@ export default async function Apoia({
 					</h3>
 
 					{/** biome-ignore lint/style/noNonNullAssertion: user.userName! */}
-					<FormDonate slug={user.userName!} creatorId={user.id} />
+					<FormDonate slug={user.userName!} creatorId={user.connectedStripeAccountId ?? ""} />
 				</section>
 			</div>
 		</div>

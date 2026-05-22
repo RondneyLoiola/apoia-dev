@@ -1,7 +1,8 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { prisma } from "@/lib/prisma";
+import { stripe } from "@/lib/stripe";
 
 const createUserNameSchema = z.object({
 	slug: z.string().min(3, "O Slug do criador é obrigatório"),
@@ -23,12 +24,75 @@ export async function createPayments(data: CreatePaymentSchema) {
 		};
 	}
 
+	if (!data.creatorId) {
+		return {
+			data: null,
+			error: "Creator não encontrado",
+		};
+	}
+
 	try {
-		const creator = await prisma.user.findUnique({
+		const creator = await prisma.user.findFirst({
 			where: {
-				id: data.creatorId,
-			}
-		})
+				connectedStripeAccountId: data.creatorId,
+			},
+		});
+
+		if (!creator) {
+			return {
+				data: null,
+				error: "Creator não encontrado",
+			};
+		}
+
+		// Calcular a taxa que o Apoia Dev envia para o criador
+		const applicationFeeAmount = Math.floor(data.price * 0.1);
+
+		const donation = await prisma.donation.create({
+			data: {
+				donorName: data.name,
+				donorMessage: data.message,
+				userId: creator.id,
+				status: "PENDING",
+				amount: data.price - applicationFeeAmount,
+			},
+		});
+
+		const session = await stripe.checkout.sessions.create({
+			payment_method_types: ["card"],
+			mode: "payment",
+			success_url: `${process.env.HOST_URL}/creator/${data.slug}`,
+			cancel_url: `${process.env.HOST_URL}/creator/${data.slug}`,
+			line_items: [
+				{
+					price_data: {
+						currency: "brl",
+						product_data: {
+							name: `Apoiar ${creator.name}`,
+						},
+						unit_amount: data.price,
+					},
+					quantity: 1,
+				},
+			],
+			// taxa que a plataforma vai receber
+			payment_intent_data: {
+				application_fee_amount: applicationFeeAmount, // stripe trabalha em centavos
+				transfer_data: {
+					destination: creator.connectedStripeAccountId as string, // criador que vai receber
+				},
+				metadata: {
+					donorName: data.name,
+					donorMessage: data.message,
+					donationId: donation.id,
+				},
+			},
+		});
+
+		return {
+			data: JSON.stringify(session),
+			error: null,
+		};
 	} catch (_error) {
 		return {
 			data: null,

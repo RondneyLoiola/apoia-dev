@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import { getStripeJs } from "@/lib/stripe-js";
 import { createPayments } from "../_actions/create-payments";
 
 const formSchema = z.object({
@@ -33,7 +35,7 @@ interface FormDonateProps {
 	slug: string;
 }
 
-export function FormDonate({slug, creatorId}: FormDonateProps) {
+export function FormDonate({ slug, creatorId }: FormDonateProps) {
 	const form = useForm<FormData>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -54,7 +56,23 @@ export function FormDonate({slug, creatorId}: FormDonateProps) {
 			price: priceInCents,
 		});
 
-		console.log(checkout);
+		if (checkout.error) {
+			toast.error(checkout.error);
+			return;
+		}
+
+		if (checkout.data) {
+			const data = JSON.parse(checkout.data);
+
+			const stripe = await getStripeJs();
+
+			if(!stripe) {
+				toast.error("Falha ao criar o pagamento, tente mais tarde")
+				return;
+			}
+
+			window.location.href = data.url;
+		}
 	}
 
 	return (
@@ -120,7 +138,9 @@ export function FormDonate({slug, creatorId}: FormDonateProps) {
 						</FormItem>
 					)}
 				/>
-				<Button type="submit">Fazer doação</Button>
+				<Button type="submit" disabled={form.formState.isSubmitting}>
+					{form.formState.isSubmitting ? "Fazendo doação..." : "Fazer doação"}
+				</Button>
 			</form>
 		</Form>
 	);
