@@ -26,7 +26,6 @@ export async function createUserName(data: CreateUserNameFormData) {
 	const schema = createUserNameSchema.safeParse(data); // valida o schema
 
 	if (!schema.success) {
-		console.log(schema);
 		return {
 			data: null,
 			error: schema.error.issues[0].message,

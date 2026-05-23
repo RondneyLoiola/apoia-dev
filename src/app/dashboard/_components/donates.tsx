@@ -7,18 +7,19 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import type { Donation } from "@/generated/prisma/client";
+import { formatCurrency, formatDate } from "@/utils/format";
 
-const donations = [
-	{
-		id: "1",
-		donorName: "João Silva",
-		donorMessage: "Adoro seu trabalho!",
-		amount: 1000,
-		createdAt: new Date("2023-10-01T12:00:00Z"),
-	},
-];
+type DonationProp = Pick<
+	Donation,
+	"donorName" | "donorMessage" | "amount" | "createdAt" | "id"
+>;
 
-export function DonationTable() {
+interface DonationTableProps {
+	data: DonationProp[];
+}
+
+export function DonationTable({ data }: DonationTableProps) {
 	return (
 		<>
 			{/* Versão para desktop */}
@@ -41,7 +42,7 @@ export function DonationTable() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{donations.map((donation) => (
+						{data.map((donation) => (
 							<TableRow key={donation.id}>
 								<TableCell className="font-medium">
 									{donation.donorName}
@@ -49,9 +50,9 @@ export function DonationTable() {
 								<TableCell className="max-w-72">
 									{donation.donorMessage}
 								</TableCell>
-								<TableCell className="text-center">{donation.amount}</TableCell>
+								<TableCell className="text-center">{formatCurrency((donation.amount) / 100)}</TableCell>
 								<TableCell className="text-center">
-									{donation.createdAt.toDateString()}
+									{formatDate(donation.createdAt)}
 								</TableCell>
 							</TableRow>
 						))}
@@ -61,7 +62,7 @@ export function DonationTable() {
 
 			{/* Versão para mobile */}
 			<div className="lg:hidden space-y-4">
-				{donations.map((donation) => (
+				{data.map((donation) => (
 					<Card key={donation.id}>
 						<CardHeader>
 							<CardTitle className="text-lg">{donation.donorName}</CardTitle>
@@ -72,10 +73,10 @@ export function DonationTable() {
 							</p>
 							<div className="flex justify-between items-center">
 								<span className="text-green-500 font-semibold">
-									{donation.amount}
+									{formatCurrency((donation.amount) / 100)}
 								</span>
 								<span className="text-sm text-muted-foreground">
-									{donation.createdAt.toDateString()}
+									{formatDate(donation.createdAt)}
 								</span>
 							</div>
 						</CardContent>
