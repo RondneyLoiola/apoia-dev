@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth";
 import { Stats } from "./_components/analytics";
 import { CreateAccountButton } from "./_components/create-account-button";
 import { DonationTable } from "./_components/donates";
-import { getAllDonations } from "./_data-access/get-donate";
 import { getStripeDashboard } from "./_data-access/get-stripe-dashboard";
 
 export default async function Dashboard() {
@@ -17,7 +16,7 @@ export default async function Dashboard() {
 		session.user.connectedStripeAccountId,
 	);
 
-	const donates = await getAllDonations(session.user.id);
+	//const donates = await getAllDonations(session.user.id);
 
 	return (
 		<div className="p-4">
@@ -49,7 +48,7 @@ export default async function Dashboard() {
 
 					<h2 className="text-2xl font-semibold mb-2">Últimas doações</h2>
 
-					<DonationTable data={donates.data} />
+					<DonationTable />
 				</>
 			)}
 		</div>
