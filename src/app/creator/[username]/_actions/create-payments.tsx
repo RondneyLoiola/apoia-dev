@@ -4,7 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 
-const createUserNameSchema = z.object({
+const createPaymentSchema = z.object({
 	slug: z.string().min(3, "O Slug do criador é obrigatório"),
 	name: z.string().min(3, "O nome precisa ter pelo menos 3 caracteres"),
 	message: z.string().min(5, "A mensagem precisa ter pelo menos 5 caracteres"),
@@ -12,10 +12,10 @@ const createUserNameSchema = z.object({
 	creatorId: z.string(),
 });
 
-type CreatePaymentSchema = z.infer<typeof createUserNameSchema>;
+type CreatePaymentSchema = z.infer<typeof createPaymentSchema>;
 
 export async function createPayments(data: CreatePaymentSchema) {
-	const schema = createUserNameSchema.safeParse(data);
+	const schema = createPaymentSchema.safeParse(data);
 
 	if (!schema.success) {
 		return {
